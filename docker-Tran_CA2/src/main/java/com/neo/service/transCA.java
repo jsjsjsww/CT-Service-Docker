@@ -21,9 +21,4 @@ public class transCA {
     return res;
   }
 
-  public static JSONObject getError(String descriprtion){
-    JSONObject res = new JSONObject();
-    res.put("errorDes", descriprtion);
-    return res;
-  }
 }

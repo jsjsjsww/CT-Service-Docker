@@ -12,10 +12,10 @@ import java.util.ArrayList;
 
 public class ACTSMethod {
   public static void generateModelFile(CTModel model){
-    StringBuffer res = new StringBuffer("[System]\nName:s1\n[Parameter]\n");
+    StringBuilder res = new StringBuilder("[System]\nName:s1\n[Parameter]\n");
 	int[] values = model.getValues();
     for (int i = 0; i < values.length; i++) {
-      res.append("p" + (i + 1) + "(int):");
+      res.append("p").append(i + 1).append("(int):");
       for (int j = 0; j < values[i]; j++) {
         res.append(j);
         if (j != values[i] -1)
@@ -29,9 +29,9 @@ public class ACTSMethod {
     valueSum[0] = 0;
     for(int i = 1; i < valueSum.length; i++)
       valueSum[i] = valueSum[i - 1] + values[i - 1];
-    for(int i = 0; i < constraint.size(); i++){
-      res.append(transfer(constraint.get(i), valueSum));
-      res.append("\n");
+	for (String aConstraint : constraint) {
+	  res.append(transfer(aConstraint, valueSum));
+	  res.append("\n");
 	}
 
 	try {
@@ -64,8 +64,8 @@ public class ACTSMethod {
 	return res;
   }
 
-  public static String transfer(String constraint, int[] valueSum){
-    StringBuffer sb = new StringBuffer();
+  private static String transfer(String constraint, int[] valueSum){
+    StringBuilder sb = new StringBuilder();
     String[] split = constraint.split(" - ");
     split[0] = split[0].substring(2, split[0].length());
     int[] tmp = new int[split.length];
@@ -79,14 +79,14 @@ public class ACTSMethod {
       i++;
 	}
 	for(i = 0; i < split.length; i++){
-      String tmpString = "";
+      StringBuilder tmpString = new StringBuilder();
       for(j = 0; j < split.length; j++){
         if(i != j)
-          tmpString += (split[j] + "&&");
+          tmpString.append(split[j]).append("&&");
 	  }
-      tmpString = tmpString.substring(0, tmpString.length() - 2);
-	  tmpString += "=>" + split[i].substring(0,split[i].indexOf('=')) + "!" + split[i].substring(split[i].indexOf('='), split[i].length());
-	  sb.append(tmpString + "\n");
+      tmpString = new StringBuilder(tmpString.substring(0, tmpString.length() - 2));
+	  tmpString.append("=>").append(split[i].substring(0, split[i].indexOf('='))).append("!").append(split[i].substring(split[i].indexOf('='), split[i].length()));
+	  sb.append(tmpString).append("\n");
 	}
     return sb.toString();
   }

@@ -27,12 +27,12 @@ public class DockerController {
     // ACTS 3.0 version
     public TestSuite Generation(HttpServletRequest request) {
         BufferedReader br;
-        StringBuilder sb = null;
+        StringBuilder sb;
         String reqBody = null;
         try {
             br = new BufferedReader(new InputStreamReader(
                     request.getInputStream()));
-            String line = null;
+            String line;
             sb = new StringBuilder();
             while ((line = br.readLine()) != null) {
                 sb.append(line);
@@ -53,8 +53,8 @@ public class DockerController {
 	  jsonArray = (JSONArray)jsonObject.get("constraint");
 	  List constraintList = jsonArray.toList();
 	  ArrayList<int[]> constraint = new ArrayList<>();
-	  for(int i = 0; i < constraintList.size(); i++){
-	    String line = (String)constraintList.get(i);
+	  for (Object aConstraintList : constraintList) {
+		String line = (String) aConstraintList;
 		//constraint.add((String)constraintList.get(i));
 		String[] split = line.trim().split(" ");
 		int[] each = new int[split.length / 2];
@@ -79,7 +79,6 @@ public class DockerController {
         ArrayList<int[]> testsuite = new ArrayList<>();
         for(int i = 0; i < ts.suite.size(); i++)
             testsuite.add(ts.suite.get(i).test);
-        TestSuite res = new TestSuite(testsuite, time);
-        return res;
+	  return new TestSuite(testsuite, time);
     }
 }

@@ -19,7 +19,6 @@ import java.util.List;
 public class DockerController {
 	
     @RequestMapping(value = "", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    // ACTS 3.0 version
     public String trans_CA(HttpServletRequest request) {
         BufferedReader br;
         StringBuilder sb = null;

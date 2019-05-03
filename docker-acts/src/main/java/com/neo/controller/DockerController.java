@@ -22,15 +22,14 @@ import java.util.List;
 public class DockerController {
 	
     @RequestMapping(value = "", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    // ACTS 3.0 version
     public TestSuite ACTSGeneration(HttpServletRequest request) {
         BufferedReader br;
-        StringBuilder sb = null;
+        StringBuilder sb;
         String reqBody = null;
         try {
             br = new BufferedReader(new InputStreamReader(
                     request.getInputStream()));
-            String line = null;
+            String line;
             sb = new StringBuilder();
             while ((line = br.readLine()) != null) {
                 sb.append(line);
@@ -51,8 +50,8 @@ public class DockerController {
         jsonArray = (JSONArray)jsonObject.get("constraint");
         List constraintList = jsonArray.toList();
         ArrayList<String> constraint = new ArrayList<>();
-        for(int i = 0; i < constraintList.size(); i++){
-            constraint.add((String)constraintList.get(i));
+        for (Object aConstraintList : constraintList) {
+            constraint.add((String) aConstraintList);
         }
         CTModel model = new CTModel(parameters, strength, values, constraint, new ArrayList<int[]>(), new ArrayList<>());
         ACTSMethod.generateModelFile(model);

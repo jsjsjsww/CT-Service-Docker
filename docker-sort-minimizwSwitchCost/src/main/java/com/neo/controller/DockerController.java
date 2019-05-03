@@ -2,7 +2,6 @@ package com.neo.controller;
 
 import com.neo.domain.TestSuite;
 import com.neo.service.Rank;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,15 +21,14 @@ import java.util.List;
 public class DockerController {
 	
     @RequestMapping(value = "", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    // ACTS 3.0 version
     public TestSuite sort(HttpServletRequest request) {
         BufferedReader br;
-        StringBuilder sb = null;
+        StringBuilder sb;
         String reqBody = null;
         try {
             br = new BufferedReader(new InputStreamReader(
                     request.getInputStream()));
-            String line = null;
+            String line;
             sb = new StringBuilder();
             while ((line = br.readLine()) != null) {
                 sb.append(line);

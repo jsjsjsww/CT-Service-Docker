@@ -2,7 +2,6 @@ package com.neo.controller;
 
 import com.neo.domain.EvaluationRes;
 import com.neo.service.Evaluation;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;

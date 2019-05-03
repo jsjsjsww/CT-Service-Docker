@@ -138,7 +138,7 @@ public class Evaluation {
 	}
   }
 
-  public static int getCombinationNum(int parameters, int t, int[] values) {
+  private static int getCombinationNum(int parameters, int t, int[] values) {
 	int res = 0;
 	int[] pos = new int[t];
 	for (int i = 0; i < t; i++)

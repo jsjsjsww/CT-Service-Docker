@@ -1,13 +1,13 @@
 package com.neo.service;
 
 import com.neo.domain.CTModel;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class parser {
 
@@ -19,6 +19,9 @@ public class parser {
 	HashMap<String, HashMap<String, Integer>> pv = new HashMap<>();
 	ArrayList<int[]> relations = new ArrayList<>();
 	ArrayList<String> constraints = new ArrayList<>();
+	int[] base;
+	ArrayList<String> paraList = new ArrayList<>();
+	HashSet<String> isNumeric = new HashSet<>();
 	for (String line : lines) {
 	  String[] split = line.split(":");
 	  if (split.length == 2) {
@@ -27,15 +30,20 @@ public class parser {
 		if (par.containsKey(parName))  //重复的参数名
 		  return getError("duplicated parameter name for " + parName);
 		par.put(parName, parameters);
+		paraList.add(parName);
 		HashMap<String, Integer> tmp = new HashMap<>();
 		String[] vals = split[1].trim().split(",");
 		values.add(vals.length);
+		Boolean isNum = true;
 		for (int i = 0; i < vals.length; i++) {
 		  String val = vals[i].trim();
 		  if (tmp.containsKey(val))   //重复的参数取值
 			return getError("duplicated value name " + vals[i].trim());
+		  isNum = isNum && isNumeric(val);
 		  tmp.put(val, i + 1);
 		}
+		if(isNum)
+			isNumeric.add(parName);
 		pv.put(parName, tmp);
 	  } else if (line.contains("@")) { //处理sub model
 		String[] split1 = line.split("@");
@@ -62,36 +70,50 @@ public class parser {
 		}
 		relations.add(tmp);
 
-	  } else { //to do
-			// currently only handle "a => b", where "a" and "b" involves only one parameter
+	  } else {
 		String line1 = line.replace("IF","");
 		line1 = line1.replace("THEN", "=>");
+		line1 = line1.replaceAll("NOT", "!");
+		line1 = line1.replaceAll("AND", "&&");
+		line1 = line1.replaceAll("OR", "||");
+		line1 = line1.replaceAll("<>", "!=");
 		line1 = line1.replaceAll("\\[", "");
 		line1 = line1.replaceAll("]", "");
-		line1 = line1.replaceAll("\"", "");
-		String[] split1 = line1.split("=>");
-		String a = split1[0].trim();
-		String b = split1[1].trim();
-		JSONObject json1 = getTuple(a, par, pv);
-		JSONObject json2 = getTuple(b, par, pv);
-		if((int)json1.get("errorCode") != 0 || (int)json2.get("errorCode") != 0)
-		  return getError("some thing wrong in line " + line);
-		ArrayList<Integer> list1 = new ArrayList<>();
-		JSONArray array1 = (JSONArray) json1.get("list");
-		List list = array1.toList();
-		for (Object aList : list) list1.add((Integer) aList);
-		ArrayList<Integer> list2 = new ArrayList<>();
-		array1 = (JSONArray) json2.get("list1");
-		list = array1.toList();
-		for (Object aList : list) list2.add((Integer) aList);
-
-		for (Integer aList1 : list1)
-		  for (Integer aList2 : list2) {
-			if (aList1 < aList2)
-			  constraints.add("- " + aList1 + " - " + aList2);
-			else
-			  constraints.add("- " + aList2 + " - " + aList1);
+		base = new int[par.size()];
+		Arrays.fill(base, -1);
+		HashSet<String> involvedPar = new HashSet<>();
+		ArrayList<String> parList = new ArrayList<>();
+		for(String key: paraList){
+		  if(line1.contains(key) && !involvedPar.contains(key)) {
+			involvedPar.add(key);
+			parList.add(key);
 		  }
+		}
+		//ArrayList<String> parList = new ArrayList<>(involvedPar);
+		ArrayList<String[]> allCom = getAllCombinations(parList, pv, isNumeric);
+		String exp = transImply(line1);
+		System.out.println(exp);
+		for (String[] anAllCom : allCom) {
+		  try {
+			ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript");
+			StringBuilder con = new StringBuilder();
+			for (String s : anAllCom) {
+			  engine.eval(s);
+			  String[] split2 = s.split("=");
+			  int parIndex = par.get(split2[0]);
+			  if (base[parIndex - 1] == -1)
+				base[parIndex - 1] = getSum(split2[0], par, pv);
+			  if(split2[1].charAt(0) == '"')
+			    split2[1] = split2[1].substring(1, split2[1].length() - 1);
+			  con.append(" - ").append(base[parIndex - 1] + pv.get(split2[0]).get(split2[1]) - 1);
+			}
+			if (!(Boolean) engine.eval(exp))
+			  constraints.add(con.substring(1, con.length()));
+		  } catch (Exception e) {
+			System.out.println(Arrays.toString(e.getStackTrace()));
+			return getError("something wrong in line " + line);
+		  }
+		}
 	  }
 	}
 	CTModel res = new CTModel();
@@ -105,81 +127,20 @@ public class parser {
 	res.setConstraint(constraints);
 	return new JSONObject(res);
   }
-  private static JSONObject getTuple(String s, HashMap<String, Integer> parameters, HashMap<String, HashMap<String, Integer>> pv){
-	JSONObject res = new JSONObject();
-	ArrayList<Integer> list = new ArrayList<>();
-	ArrayList<Integer> list1 = new ArrayList<>();
-	if(s.contains("!=")){ //handle !=
-	  String[] split = s.split("!=");
-	  String p = split[0].trim();
-	  String v = split[1].trim();
-	  if(parameters.containsKey(p)){
-		int sum = getSum(p, parameters, pv);
-		for(Object o : pv.get(p).entrySet()){
-		  Map.Entry entry = (Map.Entry) o;
-		  String key = (String) entry.getKey();
-		  Integer val = (Integer) entry.getValue();
-		  if(!key.equals(v))
-			list.add(sum + val - 1);
-		  else
-			list1.add(sum + val - 1);
-		}
-	  }
-	  else{
-		res.put("errorCode", 1);
-		res.put("errorDes", "no such parameter for " + p);
-		return res;
-	  }
-	}
-	else if(s.contains("=")){
-	  String[] split = s.split("=");
-	  String p = split[0].trim();
-	  String v = split[1].trim();
-	  if(parameters.containsKey(p)){
-		int sum = getSum(p, parameters, pv);
-		for(Object o : pv.get(p).entrySet()){
-		  Map.Entry entry = (Map.Entry) o;
-		  String key = (String) entry.getKey();
-		  Integer val = (Integer) entry.getValue();
-		  if(key.equals(v))
-			list.add(sum + val - 1);
-		  else
-			list1.add(sum + val - 1);
-		}
-	  }
-	  else{
-		res.put("errorCode", 1);
-		res.put("errorDes", "no such parameter for " + p);
-		return res;
-	  }
-	}
-	else{
-	  boolean not = false;
-	  if(s.indexOf("!") == 0){
-		not = true;
-		s = s.substring(1,s.length());
-	  }
-	  if(parameters.containsKey(s) && pv.get(s).size() == 2 && pv.get(s).containsKey("TRUE") && pv.get(s).containsKey("FALSE")){
-		int sum = getSum(s, parameters, pv);
-		if(not){
-		  list.add(sum + 1);
-		  list1.add(sum);
-		}
-		else {
-		  list.add(sum);
-		  list1.add(sum + 1);
-		}
-	  }
-	  else{
-		res.put("errorCode", 1);
-		res.put("errorDes", "parameter " + s + " is not boolean");
-		return res;
-	  }
-	}
-	res.put("errorCode", 0);
-	res.put("list", list);
-	res.put("list1", list1);
-	return res;
+
+  /**
+   * 利用正则表达式判断字符串是否是数字
+   * @param str
+   * @return
+   */
+  private static Pattern pattern = Pattern.compile("-?[1-9]\\d*|0");
+  private static Pattern pattern1 = Pattern.compile("-?([1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0)");
+  private static boolean isNumeric(String str){
+	Matcher isNum = pattern.matcher(str);
+	if(isNum.matches())
+	  return true;
+	Matcher isFloat = pattern1.matcher(str);
+	return isFloat.matches();
   }
 
   private static int getSum(String p, HashMap<String, Integer> parameters, HashMap<String, HashMap<String, Integer>> pv){
@@ -194,9 +155,104 @@ public class parser {
 	}
 	return sum;
   }
+
+
+  /**
+   * transfer "a => b" to "!a || b"
+   * and double "=", since we need "==" instead of "="
+   * @param s
+   * @return
+   */
+  private static String transImply(String s){
+	String res = s;
+	res = res.replaceAll(" ", "");
+	StringBuilder sb = new StringBuilder(res);
+	int index = sb.indexOf("=>");
+	while(index != -1){
+	  //int last = index;
+	  sb.insert(0, "!(");
+	  sb.insert(index + 2, ")||(");
+	  sb.insert(sb.length(), ")");
+	  index += 6;
+	  sb.delete(index, index + 2);
+	  index = sb.indexOf("=>");
+	}
+	index = sb.indexOf("=");
+	while(index != -1){
+	  char pre = sb.charAt(index - 1);
+	  if(pre != '!' && pre != '>' && pre != '<'){
+		sb.insert(index, '=');
+		index ++;
+	  }
+	  index ++;
+	  index = sb.indexOf("=", index);
+	}
+	return sb.toString();
+  }
+
   private static  JSONObject getError(String errorDes){
 	JSONObject res = new JSONObject();
 	res.put("errorDes", errorDes);
 	return res;
+  }
+  private static boolean cons = true;
+
+  /**
+   * 笛卡尔积
+   * @param pars
+   * @param pv
+   * @return
+   */
+  private static ArrayList<String[]> getAllCombinations(ArrayList<String> pars, HashMap<String, HashMap<String, Integer>> pv, HashSet<String> isNum){
+	ArrayList<String[]> res = new ArrayList<>();
+	int[] counter = new int[pars.size()];
+	Arrays.fill(counter, 0);
+	cons = true;
+	while(cons){
+	  String[] tmp = new String[pars.size()];
+	  for(int i = 0; i < pars.size(); i++){
+		String name = pars.get(i);
+		String value = "";
+		for (Map.Entry<String, Integer> entry : pv.get(name).entrySet()) {
+		  if(entry.getValue() == counter[i] + 1){
+			value = entry.getKey();
+			break;
+		  }
+		}
+		if(isNum.contains(name))
+			tmp[i] = name + "=" + value;
+		else
+		  tmp[i] = name +"=\"" + value +"\"";
+	  }
+	  handle(counter, counter.length - 1, pars, pv);
+	  res.add(tmp);
+	}
+	return res;
+  }
+
+  /**
+   * 递归，用于笛卡儿积计算
+   * @param counter
+   * @param counterIndex
+   * @param pars
+   * @param pv
+   */
+  private static void handle(int[] counter, int counterIndex, ArrayList<String> pars, HashMap<String, HashMap<String, Integer>> pv) {
+	if(counterIndex < 0)
+	  return;
+	counter[counterIndex]++;
+	if (counter[counterIndex] >= pv.get(pars.get(counterIndex)).size()) {
+	  counter[counterIndex] = 0;
+	  counterIndex--;
+	  if(counterIndex < 0) {
+		cons = false;
+	  }
+	  handle(counter, counterIndex, pars, pv);
+	}
+  }
+
+  public static void main(String[] args){
+    String s = "-0.0454";
+    System.out.println(isNumeric(s));
   }
 }

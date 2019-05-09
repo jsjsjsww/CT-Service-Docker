@@ -1,8 +1,0 @@
-[System]
-Name:s1
-[Parameter]
-p1(int):0,1
-p2(int):0,1
-p3(int):0,1
-p4(int):0,1
-[Constraint]

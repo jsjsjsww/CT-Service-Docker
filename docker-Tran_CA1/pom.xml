@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.neo</groupId>
-	<artifactId>docker-tranCA1</artifactId>
+	<artifactId>docker-tranca1</artifactId>
 	<version>1.0</version>
 	<packaging>jar</packaging>
 

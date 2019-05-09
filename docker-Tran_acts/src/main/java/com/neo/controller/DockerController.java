@@ -17,7 +17,6 @@ import java.net.URLDecoder;
 public class DockerController {
 	
     @RequestMapping(value = "", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    // ACTS 3.0 version
     public String trans_ACTS(HttpServletRequest request) {
         BufferedReader br;
         StringBuilder sb = null;
@@ -25,7 +24,7 @@ public class DockerController {
         try {
             br = new BufferedReader(new InputStreamReader(
                     request.getInputStream()));
-            String line = null;
+            String line;
             sb = new StringBuilder();
             while ((line = br.readLine()) != null) {
                 if(line.length() == 0)

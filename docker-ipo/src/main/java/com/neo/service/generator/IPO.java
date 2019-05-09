@@ -4,9 +4,7 @@ package com.neo.service.generator;
 
 import com.neo.service.combinatorial.*;
 import com.neo.service.common.*;
-import com.neo.service.handler.MFTVerifier;
 import com.neo.service.handler.ValidityChecker;
-import org.sat4j.minisat.core.Solver;
 
 import java.util.ArrayList;
 

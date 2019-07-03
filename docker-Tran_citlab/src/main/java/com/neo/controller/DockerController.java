@@ -38,7 +38,12 @@ public class DockerController {
         }
         //System.out.println(sb);
 
-        JSONObject res = parser.parserCitLab(sb);
+        //JSONObject res = parser.parserCitLab(sb);
+        JSONObject jsonObject = new JSONObject(reqBody);
+        String body = jsonObject.getString("body");
+       // body = body.replaceAll(";","");
+        System.out.println(body);
+        JSONObject res = parser.parserCitLab(new StringBuilder(body));
         return res.toString();
     }
 

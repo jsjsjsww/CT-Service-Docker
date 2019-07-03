@@ -98,6 +98,7 @@ public class parser {
 			ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript");
 			StringBuilder con = new StringBuilder();
 			for (String s : anAllCom) {
+			  System.out.println(s);
 			  engine.eval(s);
 			  String[] split2 = s.split("=");
 			  int parIndex = par.get(split2[0]);
@@ -107,6 +108,7 @@ public class parser {
 			    split2[1] = split2[1].substring(1, split2[1].length() - 1);
 			  con.append(" - ").append(base[parIndex - 1] + pv.get(split2[0]).get(split2[1]) - 1);
 			}
+			//System.out.println(exp);
 			if (!(Boolean) engine.eval(exp))
 			  constraints.add(con.substring(1, con.length()));
 		  } catch (Exception e) {

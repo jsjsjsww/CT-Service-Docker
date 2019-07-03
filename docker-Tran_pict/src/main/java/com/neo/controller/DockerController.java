@@ -36,9 +36,14 @@ public class DockerController {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        //System.out.println(sb);
+        System.out.println(reqBody);
 
-        JSONObject res = parser.parserPICT(sb);
+        JSONObject jsonObject = new JSONObject(reqBody);
+        String body = jsonObject.getString("body");
+       body = body.replaceAll(";","");
+       System.out.println(body);
+        JSONObject res = parser.parserPICT(new StringBuilder(body));
+        //JSONObject res = parser.parserPICT(sb);
         return res.toString();
     }
 

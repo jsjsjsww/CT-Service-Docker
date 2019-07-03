@@ -34,17 +34,20 @@ public class parser {
 	  else if (line.equals("TestGoals:"))
 		phase = 4;
 	  else if (!line.equals("end")) {
+	    // System.out.println(line);
 		if (phase == 1) {
 		  String[] split = line.split(" ");
 		  if (split.length <= 1)
 			return getError("something wrong in line " + line);
 		  String parName = split[1].trim();
+		 // System.out.println(parName);
 		  if (par.containsKey(parName))  //重复的参数名
 			return getError("duplicated parameter name for " + parName);
 		  parameters++;
 		  if (split[0].equals("Boolean"))
 			parName = parName.substring(0, parName.length() - 1);
 		  par.put(parName, parameters);
+		  // System.out.println("paraName = " + parName);
 		  paraList.add(parName);
 		  HashMap<String, Integer> tmp = new HashMap<>();
 		  boolean isString = false;
@@ -131,15 +134,18 @@ public class parser {
 			}
 		  }
 		  //ArrayList<String> parList = new ArrayList<>(involvedPar);
+		  // for(int i = 0; i < paraList.size(); i++)
+		    // System.out.println(paraList.get(i));
 		  ArrayList<String[]> allCom = getAllCombinations(parList, pv, isNumeric);
 		  line = line.substring(1, line.length() - 1).trim();
 		  String exp = transImply(line);
-		  System.out.println(exp);
+		  //System.out.println(exp);
 		  for (String[] anAllCom : allCom) {
 			try {
 			  ScriptEngine engine = new ScriptEngineManager().getEngineByName("JavaScript");
 			  StringBuilder con = new StringBuilder();
 			  for (String s : anAllCom) {
+			    //System.out.println(s);
 				engine.eval(s);
 				String[] split = s.split("=");
 				int parIndex = par.get(split[0]);
@@ -334,6 +340,7 @@ public class parser {
 	  sb.delete(index, index + 2);
 	  index = sb.indexOf("=>");
 	}
+	/*
 	index = sb.indexOf("=");
 	while (index != -1) {
 	  char pre = sb.charAt(index - 1);
@@ -343,7 +350,7 @@ public class parser {
 	  }
 	  index++;
 	  index = sb.indexOf("=", index);
-	}
+	}*/
 	return sb.toString();
   }
 

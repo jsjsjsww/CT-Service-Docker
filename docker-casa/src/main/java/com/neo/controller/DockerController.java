@@ -69,7 +69,7 @@ public class DockerController {
 	  }
         Instant start = Instant.now();
         com.neo.service.combinatorial.CTModel model = new com.neo.service.combinatorial.CTModel(parameters,  values,strength, constraint, new MFTVerifier());
-        SA sa = new SA(0.2, 10000, false);
+        SA sa = new SA(0.2, 100000, false);
         com.neo.service.combinatorial.TestSuite ts = new com.neo.service.combinatorial.TestSuite();
         sa.generation(model, ts);
         Instant end = Instant.now();

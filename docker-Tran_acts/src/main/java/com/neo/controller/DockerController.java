@@ -29,7 +29,7 @@ public class DockerController {
             while ((line = br.readLine()) != null) {
                 if(line.length() == 0)
                     continue;
-                sb.append(line).append("&#");
+                sb.append(line);
             }
             reqBody = URLDecoder.decode(sb.toString(), "UTF-8");
         } catch (IOException e) {
@@ -41,7 +41,7 @@ public class DockerController {
 
         JSONObject jsonObject = new JSONObject(reqBody);
         String body = jsonObject.getString("body");
-        body = body.replaceAll("\n","$#");
+        //body = body.replaceAll("\n","$#");
         System.out.println(body);
         JSONObject res = parser.parserACTS(new StringBuilder(body));
         return res.toString();

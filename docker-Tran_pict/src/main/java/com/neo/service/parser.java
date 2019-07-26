@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class parser {
 
   public static JSONObject parserPICT(StringBuilder sb) {
-	String[] lines = sb.toString().split("&#");
+	String[] lines = sb.toString().split("##");
 	int parameters = 0;
 	HashMap<String, Integer> par = new HashMap<>();
 	ArrayList<Integer> values = new ArrayList<>();

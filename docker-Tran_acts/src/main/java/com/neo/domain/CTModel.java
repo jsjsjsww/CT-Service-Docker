@@ -4,14 +4,15 @@ import java.util.ArrayList;
 
 public class CTModel {
   private int parameter;
-  private int strength;
+  private int strength=2;
   private int[] values;
   private ArrayList<String> constraint;
   private ArrayList<int[]> seed;
   private ArrayList<int[]> relation;
 
 
-  public CTModel(){}
+  public CTModel(){
+  }
 
   public CTModel(int parameter, int strength, int[] values, ArrayList<String> constraint, ArrayList<int[]> seed, ArrayList<int[]> relation){
     this.parameter = parameter;

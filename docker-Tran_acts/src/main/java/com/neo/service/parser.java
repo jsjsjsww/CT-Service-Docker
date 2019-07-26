@@ -12,7 +12,7 @@ import java.util.*;
 public class parser {
 
   public static JSONObject parserACTS(StringBuilder sb) {
-	String[] lines = sb.toString().split("&#");
+	String[] lines = sb.toString().split("##");
 	int phase = 0, parameters = 0;
 	HashMap<String, Integer> par = new HashMap<>();
 	ArrayList<String> paraList = new ArrayList<>();

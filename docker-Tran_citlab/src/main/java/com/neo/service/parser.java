@@ -11,7 +11,7 @@ import java.util.*;
 public class parser {
 
   public static JSONObject parserCitLab(StringBuilder sb) {
-	String[] lines = sb.toString().split("&#");
+	String[] lines = sb.toString().split("##");
 	int parameters = 0;
 	HashMap<String, Integer> par = new HashMap<>();
 	ArrayList<String> paraList = new ArrayList<>();
@@ -223,7 +223,7 @@ public class parser {
 	for (int i = 0; i < size; i++)
 	  valuesArr[i] = values.get(i);
 	res.setValues(valuesArr);
-	res.setRelation(relations);
+	//res.setRelation(relations);
 	res.setSeed(seed);
 	res.setConstraint(constraints);
 	return new JSONObject(res);
